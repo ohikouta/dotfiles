@@ -8,6 +8,7 @@ end
 
 config.color_scheme = 'AdventureTime'
 config.window_background_opacity = 0.85
+config.front_end = "Software"
 
 local act = wezterm.action
 config.keys = {
