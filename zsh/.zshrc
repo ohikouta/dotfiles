@@ -80,6 +80,9 @@ plugins=(
 
 source $ZSH/oh-my-zsh.sh
 
+# 改行なし出力末尾の % マークを非表示
+unsetopt PROMPT_SP
+
 # User configuration
 
 # export MANPATH="/usr/local/man:$MANPATH"
@@ -175,7 +178,7 @@ tsplit() {
     pane_list=("${(@f)$(tmux list-panes -F '#{pane_id}')}")
     for pane_id in "${pane_list[@]}"; do
       local color_idx=$(( ((idx - 1) % ${#TSPLIT_COLORS[@]}) + 1 ))
-      tmux select-pane -t "$pane_id" -P "bg=${TSPLIT_COLORS[$color_idx]}"
+      tmux select-pane -t "$pane_id" -P "bg=${TSPLIT_COLORS[$color_idx]}" 2>/dev/null
       ((idx++))
     done
   fi
@@ -235,13 +238,13 @@ _tpane_auto_color() {
     pattern="${rule%%|*}"
     color="${rule##*|}"
     if [[ "$dir" == "$pattern"* ]]; then
-      tmux select-pane -P "bg=$color"
+      tmux select-pane -P "bg=$color" 2>/dev/null
       return
     fi
   done
 
   # どのルールにもマッチしなければデフォルト
-  tmux select-pane -P "$TPANE_DEFAULT_BG"
+  tmux select-pane -P "$TPANE_DEFAULT_BG" 2>/dev/null
 }
 
 # zsh: cd するたびに _tpane_auto_color を実行
