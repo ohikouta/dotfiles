@@ -279,6 +279,61 @@ RPROMPT=
 alias vp='cd "/Users/kota/Library/Mobile Documents/iCloud~md~obsidian/Documents" && claude'
 alias vw='cd "/Users/kota/Desktop/work" && claude'
 
+if [[ -n "$TMUX" ]]; then
+    function _tmux_label_for_pwd() {
+        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            echo "git $(basename "$(git rev-parse --show-toplevel)")"
+            return
+        fi
+
+        case "$PWD" in
+            "$HOME/Desktop/work"(|/*))
+                echo "work ${PWD:t}"
+                ;;
+            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+                echo "obsidian ${PWD:t}"
+                ;;
+            "$HOME"(|/*))
+                echo "home ${PWD:t}"
+                ;;
+            *)
+                echo "${PWD:t}"
+                ;;
+        esac
+    }
+
+    function _tmux_style_for_pwd() {
+        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+            echo "#[fg=colour16,bg=colour110]"
+            return
+        fi
+
+        case "$PWD" in
+            "$HOME/Desktop/work"(|/*))
+                echo "#[fg=colour230,bg=colour24]"
+                ;;
+            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+                echo "#[fg=colour230,bg=colour58]"
+                ;;
+            "$HOME"(|/*))
+                echo "#[fg=colour16,bg=colour150]"
+                ;;
+            *)
+                echo "#[fg=colour252,bg=colour238]"
+                ;;
+        esac
+    }
+
+    function _update_tmux_pane_title() {
+        local label="$(_tmux_label_for_pwd)"
+        local style="$(_tmux_style_for_pwd)"
+
+        tmux select-pane -T "${style} ${label} #[default]" 2>/dev/null
+    }
+    autoload -Uz add-zsh-hook
+    add-zsh-hook precmd _update_tmux_pane_title
+    add-zsh-hook chpwd _update_tmux_pane_title
+fi
 
 # Tmux
 # ~/.zshrc に追加
