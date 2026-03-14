@@ -1,0 +1,17 @@
+# macOS / editor noise
+.DS_Store
+.vscode/
+
+# local auth / runtime state
+configstore/
+gh/hosts.yml
+ghc/ghci_history
+iterm2/
+
+# app-generated backups
+karabiner/automatic_backups/
+
+# not yet normalized for cross-machine sync
+anyenv/
+fish/
+raycast/
