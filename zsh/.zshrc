@@ -72,11 +72,13 @@ ZSH_THEME="dpoggi"
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(
-    git
-    zsh-syntax-highlighting
-    zsh-autosuggestions
-)
+plugins=(git)
+
+for plugin in zsh-syntax-highlighting zsh-autosuggestions; do
+    if [[ -d "${ZSH_CUSTOM:-$ZSH/custom}/plugins/${plugin}" ]] || [[ -d "${ZSH}/plugins/${plugin}" ]]; then
+        plugins+=("${plugin}")
+    fi
+done
 
 source $ZSH/oh-my-zsh.sh
 
@@ -111,7 +113,9 @@ unsetopt PROMPT_SP
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
-eval "$(anyenv init -)"
+if command -v anyenv >/dev/null 2>&1; then
+    eval "$(anyenv init -)"
+fi
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
 # Kiro CLI post block. Keep at the bottom of this file.
