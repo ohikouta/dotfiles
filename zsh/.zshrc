@@ -10,7 +10,7 @@ export ZSH="$HOME/.oh-my-zsh"
 # load a random theme each time Oh My Zsh is loaded, in which case,
 # to know which specific one was loaded, run: echo $RANDOM_THEME
 # See https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
-ZSH_THEME="dpoggi"
+ZSH_THEME=""
 
 # Set list of themes to pick from when loading at random
 # Setting this variable when ZSH_THEME=random will cause zsh to load
@@ -84,6 +84,7 @@ source $ZSH/oh-my-zsh.sh
 
 # 改行なし出力末尾の % マークを非表示
 unsetopt PROMPT_SP
+setopt PROMPT_SUBST
 
 # User configuration
 
@@ -118,12 +119,166 @@ if command -v anyenv >/dev/null 2>&1; then
 fi
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
+typeset -g PROMPT_LAST_STATUS=0
+typeset -g PROMPT_CMD_START=0
+typeset -g PROMPT_CMD_DURATION=""
+
+_prompt_context_accent() {
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "110"
+        return
+    fi
+
+    case "$PWD" in
+        "$HOME/Desktop/work"(|/*))
+            echo "24"
+            ;;
+        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+            echo "58"
+            ;;
+        "$HOME"(|/*))
+            echo "150"
+            ;;
+        *)
+            echo "238"
+            ;;
+    esac
+}
+
+_prompt_context_fg() {
+    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "16"
+        return
+    fi
+
+    case "$PWD" in
+        "$HOME/Desktop/work"(|/*))
+            echo "231"
+            ;;
+        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+            echo "231"
+            ;;
+        "$HOME"(|/*))
+            echo "16"
+            ;;
+        *)
+            echo "255"
+            ;;
+    esac
+}
+
+_prompt_path_label() {
+    case "$PWD" in
+        "$HOME/Desktop/work"(|/*))
+            echo "WORK"
+            ;;
+        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+            echo "OBSIDIAN"
+            ;;
+        "$HOME"(|/*))
+            echo "HOME"
+            ;;
+        *)
+            echo "LOCAL"
+            ;;
+    esac
+}
+
+_prompt_segment() {
+    local fg="$1"
+    local bg="$2"
+    local text="$3"
+
+    [[ -z "$text" ]] && return
+    printf '%%K{%s}%%F{%s} %s %%f%%k' "$bg" "$fg" "$text"
+}
+
+_prompt_git_segment() {
+    command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
+
+    local branch dirty
+    branch=$(command git symbolic-ref --quiet --short HEAD 2>/dev/null || command git rev-parse --short HEAD 2>/dev/null) || return
+
+    if [[ -n "$(command git status --porcelain --ignore-submodules=dirty 2>/dev/null)" ]]; then
+        dirty=" !"
+    fi
+
+    _prompt_segment "16" "110" "git ${branch}${dirty}"
+}
+
+_prompt_status_segment() {
+    (( PROMPT_LAST_STATUS == 0 )) && return
+    _prompt_segment "231" "160" "exit ${PROMPT_LAST_STATUS}"
+}
+
+_prompt_duration_segment() {
+    [[ -z "$PROMPT_CMD_DURATION" ]] && return
+    _prompt_segment "16" "179" "${PROMPT_CMD_DURATION}"
+}
+
+_prompt_time_segment() {
+    _prompt_segment "16" "117" "%*"
+}
+
+_prompt_line_one() {
+    local accent context_fg label path_segment git_segment status_segment duration_segment time_segment
+    accent="$(_prompt_context_accent)"
+    context_fg="$(_prompt_context_fg)"
+    label="$(_prompt_path_label)"
+    path_segment="$(_prompt_segment "$context_fg" "$accent" "$label %~")"
+    git_segment="$(_prompt_git_segment)"
+    status_segment="$(_prompt_status_segment)"
+    duration_segment="$(_prompt_duration_segment)"
+    time_segment="$(_prompt_time_segment)"
+
+    echo "╭─${path_segment}${git_segment}${status_segment}${duration_segment}${time_segment}"
+}
+
+_prompt_line_two() {
+    local caret_color="81"
+    (( PROMPT_LAST_STATUS == 0 )) || caret_color="196"
+    printf '╰─%%F{%s}❯%%f ' "$caret_color"
+}
+
+_prompt_precmd() {
+    local exit_code=$?
+    PROMPT_LAST_STATUS=$exit_code
+
+    if (( PROMPT_CMD_START > 0 )); then
+        local elapsed=$(( EPOCHSECONDS - PROMPT_CMD_START ))
+        if (( elapsed >= 60 )); then
+            PROMPT_CMD_DURATION="$(( elapsed / 60 ))m$(( elapsed % 60 ))s"
+        elif (( elapsed >= 1 )); then
+            PROMPT_CMD_DURATION="${elapsed}s"
+        else
+            PROMPT_CMD_DURATION=""
+        fi
+    else
+        PROMPT_CMD_DURATION=""
+    fi
+
+    PROMPT_CMD_START=0
+}
+
+_prompt_preexec() {
+    PROMPT_CMD_START=$EPOCHSECONDS
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _prompt_precmd
+add-zsh-hook preexec _prompt_preexec
+
+PROMPT='$(_prompt_line_one)
+$(_prompt_line_two)'
+RPROMPT=
+
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 
 # Obsidian AI Agent Aliases
 alias vp='cd "/Users/kota/Library/Mobile Documents/iCloud~md~obsidian/Documents" && claude'
 alias vw='cd "/Users/kota/Desktop/work" && claude'
+
 
 # Tmux
 # ~/.zshrc に追加
