@@ -1,0 +1,34 @@
+{
+  "title": "Remap Cmd+Shift+4 to Cmd+Ctrl+Shift+4 (screenshot to clipboard)",
+  "rules": [
+    {
+      "description": "Map Cmd+Shift+4 to Cmd+Ctrl+Shift+4",
+      "manipulators": [
+        {
+          "type": "basic",
+          "from": {
+            "key_code": "4",
+            "modifiers": {
+              "mandatory": [
+                "command",
+                "shift"
+              ],
+              "optional": ["any"]
+            }
+          },
+          "to": [
+            {
+              "key_code": "4",
+              "modifiers": [
+                "command",
+                "shift",
+                "control"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
