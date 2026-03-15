@@ -124,11 +124,6 @@ typeset -g PROMPT_CMD_START=0
 typeset -g PROMPT_CMD_DURATION=""
 
 _prompt_context_accent() {
-    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "110"
-        return
-    fi
-
     case "$PWD" in
         "$HOME/Desktop/work"(|/*))
             echo "24"
@@ -146,11 +141,6 @@ _prompt_context_accent() {
 }
 
 _prompt_context_fg() {
-    if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-        echo "16"
-        return
-    fi
-
     case "$PWD" in
         "$HOME/Desktop/work"(|/*))
             echo "231"
@@ -193,6 +183,79 @@ _prompt_segment() {
     printf '%%K{%s}%%F{%s} %s %%f%%k' "$bg" "$fg" "$text"
 }
 
+_prompt_session_segment() {
+    if [[ -n "$SSH_CONNECTION" ]]; then
+        _prompt_segment "231" "60" "ssh %n@%m"
+        return
+    fi
+
+    if [[ -n "$TMUX" ]]; then
+        local tmux_session
+        tmux_session=$(tmux display-message -p '#S' 2>/dev/null) || return
+        _prompt_segment "16" "153" "tmux ${tmux_session}"
+    fi
+}
+
+_prompt_runtime_segment() {
+    if [[ -n "$VIRTUAL_ENV" ]]; then
+        _prompt_segment "16" "114" "venv ${VIRTUAL_ENV:t}"
+        return
+    fi
+
+    if [[ -n "$CONDA_DEFAULT_ENV" ]]; then
+        _prompt_segment "16" "114" "conda ${CONDA_DEFAULT_ENV}"
+        return
+    fi
+
+    if [[ -n "$NIX_SHELL" ]]; then
+        _prompt_segment "16" "180" "nix ${NIX_SHELL}"
+    fi
+}
+
+_prompt_in_codex_workspace() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/AGENTS.md" ]]; then
+            return 0
+        fi
+        dir="${dir:h}"
+    done
+
+    return 1
+}
+
+_prompt_codex_name() {
+    if [[ -n "$CODEX_NAME" ]]; then
+        echo "$CODEX_NAME"
+        return
+    fi
+
+    local dir="$PWD"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.codex-name" ]]; then
+            local name
+            name=$(<"$dir/.codex-name")
+            name="${name%%$'\n'*}"
+            [[ -n "$name" ]] && echo "$name"
+            return
+        fi
+        dir="${dir:h}"
+    done
+}
+
+_prompt_codex_segment() {
+    [[ -n "$CODEX_THREAD_ID" || -n "$CODEX_CI" ]] || _prompt_in_codex_workspace || return
+    local codex_name
+    codex_name="$(_prompt_codex_name)"
+
+    if [[ -n "$codex_name" ]]; then
+        _prompt_segment "16" "45" "codex:${codex_name}"
+        return
+    fi
+
+    _prompt_segment "16" "45" "codex"
+}
+
 _prompt_git_segment() {
     command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
@@ -203,7 +266,7 @@ _prompt_git_segment() {
         dirty=" !"
     fi
 
-    _prompt_segment "16" "110" "git ${branch}${dirty}"
+    _prompt_segment "231" "61" "git ${branch}${dirty}"
 }
 
 _prompt_status_segment() {
@@ -216,22 +279,31 @@ _prompt_duration_segment() {
     _prompt_segment "16" "179" "${PROMPT_CMD_DURATION}"
 }
 
+_prompt_permission_segment() {
+    [[ -w "$PWD" ]] && return
+    _prompt_segment "231" "124" "read-only"
+}
+
 _prompt_time_segment() {
     _prompt_segment "16" "117" "%*"
 }
 
 _prompt_line_one() {
-    local accent context_fg label path_segment git_segment status_segment duration_segment time_segment
+    local accent context_fg label session_segment path_segment git_segment codex_segment runtime_segment permission_segment status_segment duration_segment time_segment
     accent="$(_prompt_context_accent)"
     context_fg="$(_prompt_context_fg)"
     label="$(_prompt_path_label)"
+    session_segment="$(_prompt_session_segment)"
     path_segment="$(_prompt_segment "$context_fg" "$accent" "$label %~")"
     git_segment="$(_prompt_git_segment)"
+    codex_segment="$(_prompt_codex_segment)"
+    runtime_segment="$(_prompt_runtime_segment)"
+    permission_segment="$(_prompt_permission_segment)"
     status_segment="$(_prompt_status_segment)"
     duration_segment="$(_prompt_duration_segment)"
     time_segment="$(_prompt_time_segment)"
 
-    echo "╭─${path_segment}${git_segment}${status_segment}${duration_segment}${time_segment}"
+    echo "╭─${session_segment}${path_segment}${git_segment}${codex_segment}${runtime_segment}${permission_segment}${status_segment}${duration_segment}${time_segment}"
 }
 
 _prompt_line_two() {
@@ -280,9 +352,26 @@ alias vp='cd "/Users/kota/Library/Mobile Documents/iCloud~md~obsidian/Documents"
 alias vw='cd "/Users/kota/Desktop/work" && claude'
 
 if [[ -n "$TMUX" ]]; then
-    function _tmux_label_for_pwd() {
+    function _tmux_path_style_for_pwd() {
+        case "$PWD" in
+            "$HOME/Desktop/work"(|/*))
+                echo "#[fg=colour230,bg=colour24]"
+                ;;
+            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+                echo "#[fg=colour230,bg=colour58]"
+                ;;
+            "$HOME"(|/*))
+                echo "#[fg=colour16,bg=colour150]"
+                ;;
+            *)
+                echo "#[fg=colour252,bg=colour238]"
+                ;;
+        esac
+    }
+
+    function _tmux_path_label_for_pwd() {
         if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-            echo "git $(basename "$(git rev-parse --show-toplevel)")"
+            print -P "%~"
             return
         fi
 
@@ -302,33 +391,39 @@ if [[ -n "$TMUX" ]]; then
         esac
     }
 
-    function _tmux_style_for_pwd() {
-        if git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
-            echo "#[fg=colour16,bg=colour110]"
+    function _tmux_git_label() {
+        command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
+
+        local branch dirty
+        branch=$(command git symbolic-ref --quiet --short HEAD 2>/dev/null || command git rev-parse --short HEAD 2>/dev/null) || return
+
+        if [[ -n "$(command git status --porcelain --ignore-submodules=dirty 2>/dev/null)" ]]; then
+            dirty=" !"
+        fi
+
+        echo "#[fg=colour231,bg=colour61] git ${branch}${dirty} #[default]"
+    }
+
+    function _tmux_codex_label() {
+        [[ -n "$CODEX_THREAD_ID" || -n "$CODEX_CI" ]] || _prompt_in_codex_workspace || return
+        local codex_name
+        codex_name="$(_prompt_codex_name)"
+
+        if [[ -n "$codex_name" ]]; then
+            echo "#[fg=colour16,bg=colour45] codex:${codex_name} #[default]"
             return
         fi
 
-        case "$PWD" in
-            "$HOME/Desktop/work"(|/*))
-                echo "#[fg=colour230,bg=colour24]"
-                ;;
-            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
-                echo "#[fg=colour230,bg=colour58]"
-                ;;
-            "$HOME"(|/*))
-                echo "#[fg=colour16,bg=colour150]"
-                ;;
-            *)
-                echo "#[fg=colour252,bg=colour238]"
-                ;;
-        esac
+        echo "#[fg=colour16,bg=colour45] codex #[default]"
     }
 
     function _update_tmux_pane_title() {
-        local label="$(_tmux_label_for_pwd)"
-        local style="$(_tmux_style_for_pwd)"
+        local path_style="$(_tmux_path_style_for_pwd)"
+        local path_label="$(_tmux_path_label_for_pwd)"
+        local git_label="$(_tmux_git_label)"
+        local codex_label="$(_tmux_codex_label)"
 
-        tmux select-pane -T "${style} ${label} #[default]" 2>/dev/null
+        tmux select-pane -T "${path_style} ${path_label} #[default]${git_label}${codex_label}" 2>/dev/null
     }
     autoload -Uz add-zsh-hook
     add-zsh-hook precmd _update_tmux_pane_title
