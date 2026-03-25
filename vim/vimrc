@@ -20,7 +20,9 @@ nnoremap k gk
 syntax enable
 highlight Search ctermfg=0 ctermbg=11
 highlight IncSearch ctermfg=0 ctermbg=14
-highlight CursorLine cterm=NONE ctermbg=236
+set cursorlineopt=line,number
+highlight CursorLine cterm=NONE ctermbg=238
+highlight CursorLineNr cterm=bold ctermfg=221 ctermbg=238
 
 set list
 set listchars=tab:>-
@@ -35,3 +37,9 @@ set wrapscan
 set hlsearch
 
 nmap <Esc><Esc> :nohlsearch<CR><Esc>
+
+augroup markdown_list
+  autocmd!
+  autocmd FileType markdown setlocal comments=b:*,b:-,b:+,n:>
+  autocmd FileType markdown setlocal formatoptions+=r
+augroup END

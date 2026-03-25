@@ -82,6 +82,10 @@ done
 
 source $ZSH/oh-my-zsh.sh
 
+if [[ -d "$HOME/.config/bin" ]]; then
+    path=("$HOME/.config/bin" $path)
+fi
+
 # 改行なし出力末尾の % マークを非表示
 unsetopt PROMPT_SP
 setopt PROMPT_SUBST
@@ -562,3 +566,11 @@ add-zsh-hook chpwd _tpane_auto_color
 
 # シェル起動時にも現在のディレクトリで色を適用
 _tpane_auto_color
+
+codex() {
+  if [[ -f "$HOME/.config/bin/codex-startup-dashboard" ]]; then
+    zsh "$HOME/.config/bin/codex-startup-dashboard"
+  fi
+
+  command codex "$@"
+}
