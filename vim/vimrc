@@ -42,4 +42,8 @@ augroup markdown_list
   autocmd!
   autocmd FileType markdown setlocal comments=b:*,b:-,b:+,n:>
   autocmd FileType markdown setlocal formatoptions+=r
+  autocmd FileType markdown setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
+  " Tab/Shift-Tab でリストのインデント操作（インサートモード）
+  autocmd FileType markdown inoremap <buffer> <Tab> <C-t>
+  autocmd FileType markdown inoremap <buffer> <S-Tab> <C-d>
 augroup END
