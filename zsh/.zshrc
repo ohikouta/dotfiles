@@ -260,6 +260,50 @@ _prompt_codex_segment() {
     _prompt_segment "16" "45" "codex"
 }
 
+_prompt_in_claude_workspace() {
+    local dir="$PWD"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/CLAUDE.md" ]]; then
+            return 0
+        fi
+        dir="${dir:h}"
+    done
+
+    return 1
+}
+
+_prompt_claude_name() {
+    if [[ -n "$CLAUDE_NAME" ]]; then
+        echo "$CLAUDE_NAME"
+        return
+    fi
+
+    local dir="$PWD"
+    while [[ "$dir" != "/" ]]; do
+        if [[ -f "$dir/.claude-name" ]]; then
+            local name
+            name=$(<"$dir/.claude-name")
+            name="${name%%$'\n'*}"
+            [[ -n "$name" ]] && echo "$name"
+            return
+        fi
+        dir="${dir:h}"
+    done
+}
+
+_prompt_claude_segment() {
+    _prompt_in_claude_workspace || return
+    local claude_name
+    claude_name="$(_prompt_claude_name)"
+
+    if [[ -n "$claude_name" ]]; then
+        _prompt_segment "16" "208" "claude:${claude_name}"
+        return
+    fi
+
+    _prompt_segment "16" "208" "claude"
+}
+
 _prompt_git_segment() {
     command git rev-parse --is-inside-work-tree >/dev/null 2>&1 || return
 
@@ -293,7 +337,7 @@ _prompt_time_segment() {
 }
 
 _prompt_line_one() {
-    local accent context_fg label session_segment path_segment git_segment codex_segment runtime_segment permission_segment status_segment duration_segment time_segment
+    local accent context_fg label session_segment path_segment git_segment codex_segment claude_segment runtime_segment permission_segment status_segment duration_segment time_segment
     accent="$(_prompt_context_accent)"
     context_fg="$(_prompt_context_fg)"
     label="$(_prompt_path_label)"
@@ -301,13 +345,14 @@ _prompt_line_one() {
     path_segment="$(_prompt_segment "$context_fg" "$accent" "$label %~")"
     git_segment="$(_prompt_git_segment)"
     codex_segment="$(_prompt_codex_segment)"
+    claude_segment="$(_prompt_claude_segment)"
     runtime_segment="$(_prompt_runtime_segment)"
     permission_segment="$(_prompt_permission_segment)"
     status_segment="$(_prompt_status_segment)"
     duration_segment="$(_prompt_duration_segment)"
     time_segment="$(_prompt_time_segment)"
 
-    echo "╭─${session_segment}${path_segment}${git_segment}${codex_segment}${runtime_segment}${permission_segment}${status_segment}${duration_segment}${time_segment}"
+    echo "╭─${session_segment}${path_segment}${git_segment}${codex_segment}${claude_segment}${runtime_segment}${permission_segment}${status_segment}${duration_segment}${time_segment}"
 }
 
 _prompt_line_two() {
@@ -421,13 +466,28 @@ if [[ -n "$TMUX" ]]; then
         echo "#[fg=colour16,bg=colour45] codex #[default]"
     }
 
+    function _tmux_claude_label() {
+        _prompt_in_claude_workspace || return
+        local claude_name
+        claude_name="$(_prompt_claude_name)"
+
+        if [[ -n "$claude_name" ]]; then
+            echo "#[fg=colour16,bg=colour208] claude:${claude_name} #[default]"
+            return
+        fi
+
+        echo "#[fg=colour16,bg=colour208] claude #[default]"
+    }
+
     function _update_tmux_pane_title() {
         local path_style="$(_tmux_path_style_for_pwd)"
         local path_label="$(_tmux_path_label_for_pwd)"
         local git_label="$(_tmux_git_label)"
         local codex_label="$(_tmux_codex_label)"
+        local claude_label="$(_tmux_claude_label)"
 
-        tmux select-pane -T "${path_style} ${path_label} #[default]${git_label}${codex_label}" 2>/dev/null
+        local label="${path_style} ${path_label} #[default]${git_label}${codex_label}${claude_label}"
+        tmux set-option -p @pane_label "$label" 2>/dev/null
     }
     autoload -Uz add-zsh-hook
     add-zsh-hook precmd _update_tmux_pane_title
