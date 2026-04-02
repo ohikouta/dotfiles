@@ -82,6 +82,13 @@ done
 
 source $ZSH/oh-my-zsh.sh
 
+# Load machine-local private config (paths, aliases)
+[[ -f "$HOME/.config/zsh/.zshrc.local" ]] && source "$HOME/.config/zsh/.zshrc.local"
+
+# Defaults for context directories (overridden by .zshrc.local)
+: "${DOTFILES_WORK_DIR:=$HOME/work}"
+: "${DOTFILES_OBSIDIAN_DIR:=$HOME/obsidian}"
+
 if [[ -d "$HOME/.config/bin" ]]; then
     path=("$HOME/.config/bin" $path)
 fi
@@ -129,10 +136,10 @@ typeset -g PROMPT_CMD_DURATION=""
 
 _prompt_context_accent() {
     case "$PWD" in
-        "$HOME/Desktop/work"(|/*))
+        "${DOTFILES_WORK_DIR}"(|/*))
             echo "24"
             ;;
-        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
             echo "58"
             ;;
         "$HOME"(|/*))
@@ -146,10 +153,10 @@ _prompt_context_accent() {
 
 _prompt_context_fg() {
     case "$PWD" in
-        "$HOME/Desktop/work"(|/*))
+        "${DOTFILES_WORK_DIR}"(|/*))
             echo "231"
             ;;
-        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
             echo "231"
             ;;
         "$HOME"(|/*))
@@ -163,10 +170,10 @@ _prompt_context_fg() {
 
 _prompt_path_label() {
     case "$PWD" in
-        "$HOME/Desktop/work"(|/*))
+        "${DOTFILES_WORK_DIR}"(|/*))
             echo "WORK"
             ;;
-        "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
             echo "OBSIDIAN"
             ;;
         "$HOME"(|/*))
@@ -396,17 +403,13 @@ RPROMPT=
 # Kiro CLI post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/kiro-cli/shell/zshrc.post.zsh"
 
-# Obsidian AI Agent Aliases
-alias vp='cd "/Users/kota/Library/Mobile Documents/iCloud~md~obsidian/Documents" && claude'
-alias vw='cd "/Users/kota/Desktop/work" && claude'
-
 if [[ -n "$TMUX" ]]; then
     function _tmux_path_style_for_pwd() {
         case "$PWD" in
-            "$HOME/Desktop/work"(|/*))
+            "${DOTFILES_WORK_DIR}"(|/*))
                 echo "#[fg=colour230,bg=colour24]"
                 ;;
-            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+            "${DOTFILES_OBSIDIAN_DIR}"(|/*))
                 echo "#[fg=colour230,bg=colour58]"
                 ;;
             "$HOME"(|/*))
@@ -425,10 +428,10 @@ if [[ -n "$TMUX" ]]; then
         fi
 
         case "$PWD" in
-            "$HOME/Desktop/work"(|/*))
+            "${DOTFILES_WORK_DIR}"(|/*))
                 echo "work ${PWD:t}"
                 ;;
-            "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents"(|/*))
+            "${DOTFILES_OBSIDIAN_DIR}"(|/*))
                 echo "obsidian ${PWD:t}"
                 ;;
             "$HOME"(|/*))

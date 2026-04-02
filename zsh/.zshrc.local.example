@@ -1,0 +1,12 @@
+# zsh/.zshrc.local.example — copy to .zshrc.local and edit
+#
+# This file is sourced by .zshrc for machine-specific paths and aliases.
+# It is gitignored and never pushed.
+
+# Context directories for prompt coloring
+DOTFILES_WORK_DIR="$HOME/work"
+DOTFILES_OBSIDIAN_DIR="$HOME/obsidian"
+
+# Quick-launch aliases (optional)
+# alias vw='cd "$DOTFILES_WORK_DIR" && claude'
+# alias vp='cd "$DOTFILES_OBSIDIAN_DIR" && claude'
