@@ -86,8 +86,13 @@ source $ZSH/oh-my-zsh.sh
 [[ -f "$HOME/.config/zsh/.zshrc.local" ]] && source "$HOME/.config/zsh/.zshrc.local"
 
 # Defaults for context directories (overridden by .zshrc.local)
-: "${DOTFILES_WORK_DIR:=$HOME/work}"
-: "${DOTFILES_OBSIDIAN_DIR:=$HOME/obsidian}"
+: "${DOTFILES_WORK_VAULT:=$HOME/work}"
+: "${DOTFILES_PRIVATE_VAULT:=$HOME/obsidian}"
+# Normalize: expand to absolute paths and strip trailing slashes
+DOTFILES_WORK_VAULT=${DOTFILES_WORK_VAULT:A}
+DOTFILES_WORK_VAULT=${DOTFILES_WORK_VAULT%/}
+DOTFILES_PRIVATE_VAULT=${DOTFILES_PRIVATE_VAULT:A}
+DOTFILES_PRIVATE_VAULT=${DOTFILES_PRIVATE_VAULT%/}
 
 if [[ -d "$HOME/.config/bin" ]]; then
     path=("$HOME/.config/bin" $path)
@@ -136,10 +141,10 @@ typeset -g PROMPT_CMD_DURATION=""
 
 _prompt_context_accent() {
     case "$PWD" in
-        "${DOTFILES_WORK_DIR}"(|/*))
+        "${DOTFILES_WORK_VAULT}"(|/*))
             echo "24"
             ;;
-        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
+        "${DOTFILES_PRIVATE_VAULT}"(|/*))
             echo "58"
             ;;
         "$HOME"(|/*))
@@ -153,10 +158,10 @@ _prompt_context_accent() {
 
 _prompt_context_fg() {
     case "$PWD" in
-        "${DOTFILES_WORK_DIR}"(|/*))
+        "${DOTFILES_WORK_VAULT}"(|/*))
             echo "231"
             ;;
-        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
+        "${DOTFILES_PRIVATE_VAULT}"(|/*))
             echo "231"
             ;;
         "$HOME"(|/*))
@@ -170,10 +175,10 @@ _prompt_context_fg() {
 
 _prompt_path_label() {
     case "$PWD" in
-        "${DOTFILES_WORK_DIR}"(|/*))
+        "${DOTFILES_WORK_VAULT}"(|/*))
             echo "WORK"
             ;;
-        "${DOTFILES_OBSIDIAN_DIR}"(|/*))
+        "${DOTFILES_PRIVATE_VAULT}"(|/*))
             echo "OBSIDIAN"
             ;;
         "$HOME"(|/*))
@@ -406,10 +411,10 @@ RPROMPT=
 if [[ -n "$TMUX" ]]; then
     function _tmux_path_style_for_pwd() {
         case "$PWD" in
-            "${DOTFILES_WORK_DIR}"(|/*))
+            "${DOTFILES_WORK_VAULT}"(|/*))
                 echo "#[fg=colour230,bg=colour24]"
                 ;;
-            "${DOTFILES_OBSIDIAN_DIR}"(|/*))
+            "${DOTFILES_PRIVATE_VAULT}"(|/*))
                 echo "#[fg=colour230,bg=colour58]"
                 ;;
             "$HOME"(|/*))
@@ -428,10 +433,10 @@ if [[ -n "$TMUX" ]]; then
         fi
 
         case "$PWD" in
-            "${DOTFILES_WORK_DIR}"(|/*))
+            "${DOTFILES_WORK_VAULT}"(|/*))
                 echo "work ${PWD:t}"
                 ;;
-            "${DOTFILES_OBSIDIAN_DIR}"(|/*))
+            "${DOTFILES_PRIVATE_VAULT}"(|/*))
                 echo "obsidian ${PWD:t}"
                 ;;
             "$HOME"(|/*))
