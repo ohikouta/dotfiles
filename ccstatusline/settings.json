@@ -3,14 +3,6 @@
   "lines": [
     [
       {
-        "id": "9b9c0b41-f3e4-4757-a0bf-2badaec22615",
-        "type": "claude-session-id"
-      },
-      {
-        "id": "d55a4159-0132-4e2d-b3ba-3efd3ac5035a",
-        "type": "separator"
-      },
-      {
         "id": "1",
         "type": "model",
         "color": "cyan"
@@ -25,85 +17,26 @@
         "color": "brightBlack"
       },
       {
-        "id": "ef9258b3-cef0-4c69-824d-0e52a300f9c8",
+        "id": "4",
         "type": "separator"
       },
       {
-        "id": "334c4a4b-e130-44c4-bae1-1cc01663e6df",
-        "type": "context-percentage"
+        "id": "5",
+        "type": "git-branch",
+        "color": "magenta"
       },
       {
-        "id": "3234b419-96b3-4bd2-a7a9-3736ece38fc9",
+        "id": "6",
         "type": "separator"
       },
       {
-        "id": "bae2f353-551e-432b-bc8b-231126a15665",
-        "type": "context-bar"
+        "id": "7",
+        "type": "git-changes",
+        "color": "yellow"
       }
     ],
-    [
-      {
-        "id": "f4f0f5f0-b240-459e-8568-ed1fd90ac1bd",
-        "type": "git-root-dir"
-      },
-      {
-        "id": "3626adf1-3617-451e-af8f-b776a74bff6b",
-        "type": "separator"
-      },
-      {
-        "id": "9ae83fc1-b7ff-4790-8c42-ba4727447a3f",
-        "type": "git-worktree"
-      },
-      {
-        "id": "ff2fa8b5-bc63-4de4-8e20-fc3acbf48939",
-        "type": "separator"
-      },
-      {
-        "id": "a54cc3e9-ace9-4829-97e4-4ea6b7d423bb",
-        "type": "git-changes"
-      },
-      {
-        "id": "e38a1305-0773-40c3-b24b-f031d95ca565",
-        "type": "separator"
-      },
-      {
-        "id": "4ad052e0-fbfc-4488-a02f-4f1a8dce0e45",
-        "type": "vim-mode"
-      }
-    ],
-    [
-      {
-        "id": "a3bb976c-4a64-4797-8322-9a3749e4d933",
-        "type": "session-clock"
-      },
-      {
-        "id": "cd59e703-bbac-4a57-b1ae-4e8315c7315b",
-        "type": "separator"
-      },
-      {
-        "id": "9fb97edf-676c-4c2f-82a8-6cd9365211f4",
-        "type": "session-name"
-      },
-      {
-        "id": "bb7b60cb-0c35-498f-a6d4-146d6a550d4a",
-        "type": "separator"
-      },
-      {
-        "id": "ddb87eac-00fc-4326-92bf-f8d171fadae2",
-        "type": "skills",
-        "metadata": {
-          "mode": "list"
-        }
-      },
-      {
-        "id": "297fc8cc-ddeb-4d7a-8d09-2a161ad12b73",
-        "type": "separator"
-      },
-      {
-        "id": "75408e92-19f3-4ad3-bf71-2f5859345214",
-        "type": "weekly-usage"
-      }
-    ]
+    [],
+    []
   ],
   "flexMode": "full-minus-40",
   "compactThreshold": 60,
