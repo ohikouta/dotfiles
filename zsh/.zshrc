@@ -233,16 +233,21 @@ _prompt_runtime_segment() {
     fi
 }
 
-_prompt_in_codex_workspace() {
+_find_upward_file() {
+    local target="$1"
     local dir="$PWD"
     while [[ "$dir" != "/" ]]; do
-        if [[ -f "$dir/AGENTS.md" ]]; then
+        if [[ -f "$dir/$target" ]]; then
+            echo "$dir/$target"
             return 0
         fi
         dir="${dir:h}"
     done
-
     return 1
+}
+
+_prompt_in_codex_workspace() {
+    _find_upward_file "AGENTS.md" >/dev/null
 }
 
 _prompt_codex_name() {
@@ -251,17 +256,12 @@ _prompt_codex_name() {
         return
     fi
 
-    local dir="$PWD"
-    while [[ "$dir" != "/" ]]; do
-        if [[ -f "$dir/.codex-name" ]]; then
-            local name
-            name=$(<"$dir/.codex-name")
-            name="${name%%$'\n'*}"
-            [[ -n "$name" ]] && echo "$name"
-            return
-        fi
-        dir="${dir:h}"
-    done
+    local found
+    found="$(_find_upward_file ".codex-name")" || return
+    local name
+    name=$(<"$found")
+    name="${name%%$'\n'*}"
+    [[ -n "$name" ]] && echo "$name"
 }
 
 _prompt_codex_segment() {
@@ -278,34 +278,26 @@ _prompt_codex_segment() {
 }
 
 _prompt_in_claude_workspace() {
-    local dir="$PWD"
-    while [[ "$dir" != "/" ]]; do
-        if [[ -f "$dir/CLAUDE.md" ]]; then
-            return 0
-        fi
-        dir="${dir:h}"
-    done
-
-    return 1
+    _find_upward_file "CLAUDE.md" >/dev/null
 }
 
 _prompt_claude_name() {
+    local name=""
     if [[ -n "$CLAUDE_NAME" ]]; then
-        echo "$CLAUDE_NAME"
-        return
+        name="$CLAUDE_NAME"
+    else
+        local found
+        found="$(_find_upward_file ".claude-name")" || return
+        name=$(<"$found")
+        name="${name%%$'\n'*}"
     fi
 
-    local dir="$PWD"
-    while [[ "$dir" != "/" ]]; do
-        if [[ -f "$dir/.claude-name" ]]; then
-            local name
-            name=$(<"$dir/.claude-name")
-            name="${name%%$'\n'*}"
-            [[ -n "$name" ]] && echo "$name"
-            return
-        fi
-        dir="${dir:h}"
-    done
+    if [[ -n "$name" ]]; then
+        name="${name//[[:cntrl:]]/}"
+        name="${name:0:32}"
+        name="${name//\%/%%}"
+        echo "$name"
+    fi
 }
 
 _prompt_claude_segment() {
@@ -485,6 +477,7 @@ if [[ -n "$TMUX" ]]; then
         claude_name="$(_prompt_claude_name)"
 
         if [[ -n "$claude_name" ]]; then
+            claude_name="${claude_name//#/##}"
             echo "#[fg=colour16,bg=colour208] claude:${claude_name} #[default]"
             return
         fi
