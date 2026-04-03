@@ -15,3 +15,14 @@ karabiner/automatic_backups/
 anyenv/
 fish/
 raycast/
+
+# machine-local private config
+zsh/.zshrc.local
+
+# AWS VPN
+AWS VPN Client/
+AWSVPNClient/
+
+# backup / scratch
+nvim.bak/
+q/
