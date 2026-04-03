@@ -130,8 +130,13 @@ setopt PROMPT_SUBST
 # Example aliases
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
+# anyenv: 遅延読み込み（起動を約1秒短縮）
 if command -v anyenv >/dev/null 2>&1; then
-    eval "$(anyenv init -)"
+    anyenv() {
+        unfunction anyenv
+        eval "$(command anyenv init -)"
+        anyenv "$@"
+    }
 fi
 export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
 
