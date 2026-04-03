@@ -251,17 +251,22 @@ _prompt_in_codex_workspace() {
 }
 
 _prompt_codex_name() {
+    local name=""
     if [[ -n "$CODEX_NAME" ]]; then
-        echo "$CODEX_NAME"
-        return
+        name="$CODEX_NAME"
+    else
+        local found
+        found="$(_find_upward_file ".codex-name")" || return
+        name=$(<"$found")
+        name="${name%%$'\n'*}"
     fi
 
-    local found
-    found="$(_find_upward_file ".codex-name")" || return
-    local name
-    name=$(<"$found")
-    name="${name%%$'\n'*}"
-    [[ -n "$name" ]] && echo "$name"
+    if [[ -n "$name" ]]; then
+        name="${name//[[:cntrl:]]/}"
+        name="${name:0:32}"
+        name="${name//\%/%%}"
+        echo "$name"
+    fi
 }
 
 _prompt_codex_segment() {
