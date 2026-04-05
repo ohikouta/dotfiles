@@ -154,8 +154,8 @@ _check() {
 }
 
 _check "$HOME/.config"
-for d in "$HOME/projects"/*/; do _check "${d%/}"; done
-for d in "$HOME/study"/*/;    do _check "${d%/}"; done
+for d in "$HOME/projects"/*(/N); do _check "${d%/}"; done
+for d in "$HOME/study"/*(/N);    do _check "${d%/}"; done
 _check "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-private"
 
 # ── テーブル出力 ───────────────────────────────────────────────────────────────
