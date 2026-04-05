@@ -645,3 +645,33 @@ codex() {
 
   command codex "$@"
 }
+
+# ── Agent Map: 起動時表示 ─────────────────────────────────────────────────────
+_AGENT_MAP_CACHE="$HOME/.cache/agent_map"
+_AGENT_MAP_GEN="$HOME/.config/zsh/agent_map_gen"
+mkdir -p "${_AGENT_MAP_CACHE:h}"
+if [[ -f "$_AGENT_MAP_CACHE" ]]; then
+  cat "$_AGENT_MAP_CACHE"
+  # キャッシュが1時間以上古ければバックグラウンドで更新（表示はブロックしない）
+  if (( $(date +%s) - $(stat -f %m "$_AGENT_MAP_CACHE") > 3600 )); then
+    (
+      local _tmp
+      _tmp="$(mktemp "${_AGENT_MAP_CACHE}.tmp.XXXXXX")" || exit 1
+      if zsh "$_AGENT_MAP_GEN" > "$_tmp"; then
+        mv "$_tmp" "$_AGENT_MAP_CACHE"
+      else
+        rm -f "$_tmp"
+      fi
+    ) &!
+  fi
+else
+  # 初回: 同期生成してキャッシュ保存（tmpを経由してアトミックに）
+  local _tmp
+  _tmp="$(mktemp "${_AGENT_MAP_CACHE}.tmp.XXXXXX")" || return
+  if zsh "$_AGENT_MAP_GEN" | tee "$_tmp"; then
+    mv "$_tmp" "$_AGENT_MAP_CACHE"
+  else
+    rm -f "$_tmp"
+  fi
+fi
+unset _AGENT_MAP_CACHE _AGENT_MAP_GEN
