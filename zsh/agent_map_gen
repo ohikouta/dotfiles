@@ -16,7 +16,12 @@ W2=18   # Agents
 W3=44   # Summary & Launch
 
 # ── ボックス描画 ───────────────────────────────────────────────────────────────
-_rep() { printf "%${1}s" | tr ' ' "$2"; }
+_rep() {
+  local count="$1" char="$2" out=''
+  local i
+  for ((i = 0; i < count; i++)); do out+="$char"; done
+  printf "%s" "$out"
+}
 
 _hline() {
   local l="$1" m="$2" r="$3"
