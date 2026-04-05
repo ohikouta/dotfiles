@@ -1,0 +1,191 @@
+#!/bin/zsh
+# agent_map_gen — Claude/Codex エージェント配置テーブルを生成して stdout へ出力
+# キャッシュ用途: ~/.config/zsh/agent_map_gen > ~/.cache/agent_map
+
+# ── ANSIカラー ────────────────────────────────────────────────────────────────
+ORANGE=$'\033[38;5;208m'
+GREEN=$'\033[38;5;82m'
+BOLD=$'\033[1m'
+DIM=$'\033[2m'
+GRAY=$'\033[38;5;240m'
+RESET=$'\033[0m'
+
+# ── カラムの可視幅 ─────────────────────────────────────────────────────────────
+W1=24   # Directory
+W2=18   # Agents
+W3=44   # Summary & Launch
+
+# ── ボックス描画 ───────────────────────────────────────────────────────────────
+_rep() { printf "%${1}s" | tr ' ' "$2"; }
+
+_hline() {
+  local l="$1" m="$2" r="$3"
+  printf "%s%s%s%s%s%s%s\n" \
+    "$l"  "$(_rep $((W1+2)) '─')" \
+    "$m"  "$(_rep $((W2+2)) '─')" \
+    "$m"  "$(_rep $((W3+2)) '─')" \
+    "$r"
+}
+
+# ── ファイルから1行サマリーを取得（CJK幅対応・ボイラープレート除外）──────────
+_summary() {
+  python3 - "$1" "$((W3-1))" <<'PYEOF'
+import sys, re, unicodedata
+
+file, maxw = sys.argv[1], int(sys.argv[2])
+
+SKIP = [
+    r'^This file provides guidance',
+    r'^Run the setup script',
+    r'^After making code changes',
+    r'^By default',
+    r'^Example',
+    r'^Never',
+    r'^Always',
+    r'^```', r'^\.',  r'^\d+\.', r'^[-*]\s',
+]
+
+def display_width(s):
+    return sum(2 if unicodedata.east_asian_width(c) in ('W','F') else 1 for c in s)
+
+def truncate_pad(s, w):
+    out, cur = [], 0
+    for c in s:
+        cw = 2 if unicodedata.east_asian_width(c) in ('W','F') else 1
+        if cur + cw > w: break
+        out.append(c); cur += cw
+    return ''.join(out) + ' ' * (w - cur)
+
+try:
+    lines = open(file).readlines()
+except:
+    print(' ' * maxw); sys.exit()
+
+GENERIC_TITLES = {'CLAUDE.md', 'AGENTS.md', 'Repository Guidelines', 'README'}
+
+# 1. # タイトル（汎用名でなければ最優先）
+for raw in lines:
+    line = raw.rstrip()
+    if line.startswith('# ') and not line.startswith('## '):
+        title = line[2:].strip()
+        if title not in GENERIC_TITLES:
+            print(truncate_pad(title, maxw)); sys.exit()
+        break  # 汎用タイトルなら次のステップへ
+
+# 2. 散文行（コード・リスト・定型文を除外）
+for raw in lines:
+    line = raw.rstrip()
+    if len(line) < 5 or line.startswith('#'): continue
+    if any(re.match(p, line) for p in SKIP): continue
+    if not (line[0].isalpha() or ord(line[0]) > 127): continue
+    if line.rstrip().endswith(':'): continue
+    if line[0].islower() and ord(line[0]) < 128: continue
+    clean = re.sub(r'`([^`]+)`', r'\1', line)  # バッククォートのマーカーだけ除去
+    if '`' in clean: continue
+    print(truncate_pad(clean, maxw)); sys.exit()
+
+# 3. ## セクションヘッダー
+for raw in lines:
+    line = raw.rstrip()
+    if line.startswith('## '):
+        print(truncate_pad(line[3:], maxw)); sys.exit()
+
+# 4. 汎用タイトルもフォールバック
+for raw in lines:
+    line = raw.rstrip()
+    if line.startswith('# ') and not line.startswith('## '):
+        print(truncate_pad(line[2:], maxw)); sys.exit()
+
+print(' ' * maxw)
+PYEOF
+}
+
+# ── エージェントバッジ（可視パディング済み・カラー付き）───────────────────────
+_badges() {
+  local has_c="$1" has_x="$2"
+  local vis=""
+  [[ $has_c == true ]] && vis+="[Claude]"
+  [[ $has_c == true && $has_x == true ]] && vis+=" "
+  [[ $has_x == true ]] && vis+="[Codex]"
+
+  local padded
+  padded=$(printf "%-${W2}s" "$vis")
+  padded="${padded/\[Claude\]/${ORANGE}[Claude]${RESET}}"
+  padded="${padded/\[Codex\]/${GREEN}[Codex]${RESET}}"
+  printf "%s" "$padded"
+}
+
+# ── 起動コマンド文字列 ─────────────────────────────────────────────────────────
+_cmd() {
+  local dir="$1" short="$2" has_c="$3" has_x="$4"
+  local s=""
+  if [[ "$dir" == "$HOME/.config" ]]; then
+    [[ $has_c == true ]] && s+="claude"
+    [[ $has_c == true && $has_x == true ]] && s+="  │  "
+    [[ $has_x == true ]] && s+="codex"
+  elif [[ $has_c == true && $has_x == true ]]; then
+    s="cd ${short} && claude  │  codex"
+  elif [[ $has_c == true ]]; then
+    s="cd ${short} && claude"
+  else
+    s="cd ${short} && codex"
+  fi
+  local padded
+  padded=$(printf "%-${W3}s" "$ ${s:0:$((W3-2))}")
+  printf "%s" "${DIM}${padded}${RESET}"
+}
+
+# ── プロジェクトスキャン ───────────────────────────────────────────────────────
+typeset -a PROJECTS
+
+_check() {
+  local dir="$1"
+  [[ -d "$dir" ]] || return
+  local has_c=false has_x=false
+  [[ -f "$dir/CLAUDE.md" ]] && has_c=true
+  [[ -f "$dir/AGENTS.md" ]] && has_x=true
+  [[ $has_c == false && $has_x == false ]] && return
+  PROJECTS+=("${dir}|${has_c}|${has_x}")
+}
+
+_check "$HOME/.config"
+for d in "$HOME/projects"/*/; do _check "${d%/}"; done
+for d in "$HOME/study"/*/;    do _check "${d%/}"; done
+_check "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-private"
+
+# ── テーブル出力 ───────────────────────────────────────────────────────────────
+echo ""
+_hline "╭" "┬" "╮"
+
+printf "│ %b%-${W1}s%b │ %b%-${W2}s%b │ %b%-${W3}s%b │\n" \
+  "$BOLD" "Directory"        "$RESET" \
+  "$GRAY" "Agents"           "$RESET" \
+  "$GRAY" "Summary & Launch" "$RESET"
+
+for entry in "${PROJECTS[@]}"; do
+  dir="${entry%%|*}"
+  rest="${entry#*|}"
+  has_c="${rest%%|*}"
+  has_x="${rest##*|}"
+
+  short="${dir/#$HOME/~}"
+  (( ${#short} > W1 )) && short="…${short:$(( ${#short} - W1 + 1 ))}"
+
+  dir_col="${BOLD}$(printf "%-${W1}s" "$short")${RESET}"
+  badge_col="$(_badges "$has_c" "$has_x")"
+
+  # サマリー: AGENTS.md優先（よりプロジェクト向けの記述が多い）
+  if [[ $has_x == true ]]; then
+    sum_col="$(_summary "$dir/AGENTS.md")"
+  else
+    sum_col="$(_summary "$dir/CLAUDE.md")"
+  fi
+  cmd_col="$(_cmd "$dir" "$short" "$has_c" "$has_x")"
+
+  _hline "├" "┼" "┤"
+  printf "│ %b │ %b │ %b │\n" "$dir_col" "$badge_col" "$sum_col"
+  printf "│ %-${W1}s │ %-${W2}s │ %b │\n" "" "" "$cmd_col"
+done
+
+_hline "╰" "┴" "╯"
+echo ""
