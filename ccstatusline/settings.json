@@ -2,41 +2,44 @@
   "version": 3,
   "lines": [
     [
-      {
-        "id": "1",
-        "type": "model",
-        "color": "cyan"
-      },
-      {
-        "id": "2",
-        "type": "separator"
-      },
-      {
-        "id": "3",
-        "type": "context-length",
-        "color": "brightBlack"
-      },
-      {
-        "id": "4",
-        "type": "separator"
-      },
-      {
-        "id": "5",
-        "type": "git-branch",
-        "color": "magenta"
-      },
-      {
-        "id": "6",
-        "type": "separator"
-      },
-      {
-        "id": "7",
-        "type": "git-changes",
-        "color": "yellow"
-      }
+      { "id": "1", "type": "model", "color": "cyan" },
+      { "id": "s1", "type": "separator" },
+      { "id": "2", "type": "context-bar" },
+      { "id": "s2", "type": "separator" },
+      { "id": "3", "type": "context-percentage", "color": "yellow" },
+      { "id": "s3", "type": "separator" },
+      { "id": "4", "type": "context-length", "color": "white" },
+      { "id": "s4", "type": "separator" },
+      { "id": "5", "type": "session-cost", "color": "green" },
+      { "id": "s5", "type": "separator" },
+      { "id": "6", "type": "session-clock", "color": "brightBlack" }
     ],
-    [],
-    []
+    [
+      { "id": "10", "type": "git-branch", "color": "magenta" },
+      { "id": "s10", "type": "separator" },
+      { "id": "11", "type": "git-changes", "color": "yellow" },
+      { "id": "s11", "type": "separator" },
+      { "id": "12", "type": "git-insertions", "color": "green" },
+      { "id": "s12", "type": "separator" },
+      { "id": "13", "type": "git-deletions", "color": "red" },
+      { "id": "s13", "type": "separator" },
+      { "id": "14", "type": "tokens-input", "color": "cyan" },
+      { "id": "s14", "type": "separator" },
+      { "id": "15", "type": "tokens-output", "color": "blue" },
+      { "id": "s15", "type": "separator" },
+      { "id": "16", "type": "tokens-cached", "color": "brightBlack" }
+    ],
+    [
+      { "id": "20", "type": "session-usage", "color": "yellow" },
+      { "id": "s20", "type": "separator" },
+      { "id": "21", "type": "weekly-usage", "color": "white" },
+      { "id": "s21", "type": "separator" },
+      { "id": "22", "type": "reset-timer", "color": "brightBlack" },
+      { "id": "s22", "type": "separator" },
+      { "id": "23", "type": "version", "color": "brightBlack" },
+      { "id": "s23", "type": "separator" },
+      { "id": "24", "type": "vim-mode", "color": "cyan" }
+    ]
   ],
   "flexMode": "full-minus-40",
   "compactThreshold": 60,
@@ -45,12 +48,8 @@
   "globalBold": false,
   "powerline": {
     "enabled": false,
-    "separators": [
-      ""
-    ],
-    "separatorInvertBackground": [
-      false
-    ],
+    "separators": [""],
+    "separatorInvertBackground": [false],
     "startCaps": [],
     "endCaps": [],
     "autoAlign": false
