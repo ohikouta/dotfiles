@@ -36,7 +36,7 @@ _cd_path() {
   esac
 }
 
-# ── バッジ（固定幅 18）────────────────────────────────────────────────────────
+# ── バッジ（固定幅 16）────────────────────────────────────────────────────────
 _badge() {
   local has_c="$1" has_x="$2" vis=""
   [[ $has_c == true ]] && vis+="[Claude]"
@@ -52,11 +52,11 @@ _badge() {
 # ── 出力 ─────────────────────────────────────────────────────────────────────
 echo ""
 for entry in "${ROWS[@]}"; do
-  local dir="${entry%%|*}"
-  local rest="${entry#*|}"
-  local has_c="${rest%%|*}"
-  local has_x="${rest##*|}"
-  local cdpath_str="$(_cd_path "$dir")"
+  dir="${entry%%|*}"
+  rest="${entry#*|}"
+  has_c="${rest%%|*}"
+  has_x="${rest##*|}"
+  cdpath_str="$(_cd_path "$dir")"
 
   printf "  %b  ${DIM}cd %s${RESET}\n" "$(_badge "$has_c" "$has_x")" "$cdpath_str"
 done
