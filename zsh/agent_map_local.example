@@ -1,0 +1,9 @@
+# agent_map_local — この端末でスキャンするエージェントディレクトリ
+# ~/.config/zsh/agent_map_local にコピーして使用（gitignore対象）
+# 1行1パス。~ 展開対応。# はコメント。
+
+~/.config
+~/projects/foo
+~/projects/bar
+~/study/math
+~/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-private
