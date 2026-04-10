@@ -32,10 +32,16 @@ _check() {
 }
 
 # agent_map_local を1行ずつ読む（# コメント・空行はスキップ）
+# ワイルドカード（例: ~/Documents/*/）はグロブ展開してサブディレクトリを全スキャン
 while IFS= read -r line || [[ -n "$line" ]]; do
   [[ "$line" =~ ^[[:space:]]*# ]] && continue
   [[ -z "${line// }" ]] && continue
-  _check "$line"
+  local expanded="${line/#\~/$HOME}"
+  if [[ "$line" == *'*'* ]]; then
+    for d in ${~expanded}(/N); do _check "${d%/}"; done
+  else
+    _check "$line"
+  fi
 done < "$LOCAL_CONF"
 
 # ── cd パス（短縮）────────────────────────────────────────────────────────────
