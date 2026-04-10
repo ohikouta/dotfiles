@@ -1,9 +1,9 @@
 # agent_map_local — この端末でスキャンするエージェントディレクトリ
 # ~/.config/zsh/agent_map_local にコピーして使用（gitignore対象）
 # 1行1パス。~ 展開対応。# はコメント。
+# ワイルドカード使用可: ~/Documents/*/ と書けばサブディレクトリを全スキャン
 
 ~/.config
-~/projects/foo
-~/projects/bar
-~/study/math
+~/Documents/*/
+~/projects/specific-repo
 ~/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-private
