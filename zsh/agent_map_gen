@@ -24,6 +24,8 @@ typeset -a ROWS
 _check() {
   local dir="${1/#\~/$HOME}"   # ~ を展開
   [[ -d "$dir" ]] || return
+  # 重複チェック
+  local e; for e in "${ROWS[@]}"; do [[ "${e%%|*}" == "$dir" ]] && return; done
   local has_c=false has_x=false
   [[ -f "$dir/CLAUDE.md" ]] && has_c=true
   [[ -f "$dir/AGENTS.md" ]] && has_x=true
