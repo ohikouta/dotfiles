@@ -18,6 +18,7 @@ raycast/
 
 # machine-local private config
 zsh/.zshrc.local
+zsh/agent_map_local
 
 # AWS VPN
 AWS VPN Client/

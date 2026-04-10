@@ -1,16 +1,28 @@
 #!/bin/zsh
 # agent_map_gen — エージェント配置一覧を生成して stdout へ出力
+# スキャン対象は ~/.config/zsh/agent_map_local に記述（gitignore対象）
 
 ORANGE=$'\033[38;5;208m'
 GREEN=$'\033[38;5;82m'
 DIM=$'\033[2m'
 RESET=$'\033[0m'
 
+LOCAL_CONF="${HOME}/.config/zsh/agent_map_local"
+
+# ── ローカル設定ファイルがなければ終了 ───────────────────────────────────────
+if [[ ! -f "$LOCAL_CONF" ]]; then
+  echo ""
+  printf "  ${DIM}agent map: %s が未作成です。agent_map_local.example を参照。${RESET}\n" \
+    "~/.config/zsh/agent_map_local"
+  echo ""
+  exit 0
+fi
+
 # ── プロジェクトスキャン ──────────────────────────────────────────────────────
 typeset -a ROWS
 
 _check() {
-  local dir="$1"
+  local dir="${1/#\~/$HOME}"   # ~ を展開
   [[ -d "$dir" ]] || return
   local has_c=false has_x=false
   [[ -f "$dir/CLAUDE.md" ]] && has_c=true
@@ -19,10 +31,12 @@ _check() {
   ROWS+=("${dir}|${has_c}|${has_x}")
 }
 
-_check "$HOME/.config"
-for d in "$HOME/projects"/*(/N); do _check "${d%/}"; done
-for d in "$HOME/study"/*(/N);    do _check "${d%/}"; done
-_check "$HOME/Library/Mobile Documents/iCloud~md~obsidian/Documents/obsidian-private"
+# agent_map_local を1行ずつ読む（# コメント・空行はスキップ）
+while IFS= read -r line || [[ -n "$line" ]]; do
+  [[ "$line" =~ ^[[:space:]]*# ]] && continue
+  [[ -z "${line// }" ]] && continue
+  _check "$line"
+done < "$LOCAL_CONF"
 
 # ── cd パス（短縮）────────────────────────────────────────────────────────────
 _cd_path() {
