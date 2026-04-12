@@ -675,3 +675,7 @@ else
   fi
 fi
 unset _AGENT_MAP_CACHE _AGENT_MAP_GEN
+
+# cmux workspace setup
+alias cmux-setup='~/projects/agent-playbook/scripts/cmux-setup.sh'
+alias tmux-monitor='~/projects/agent-playbook/scripts/cmux-setup.sh setup tmux-session-monitor'
