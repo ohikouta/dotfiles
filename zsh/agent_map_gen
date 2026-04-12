@@ -81,3 +81,10 @@ for entry in "${ROWS[@]}"; do
   printf "  %b  ${DIM}cd %s${RESET}\n" "$(_badge "$has_c" "$has_x")" "$cdpath_str"
 done
 echo ""
+
+# ── cmux workspace ────────────────────────────────────────────────────────────
+CYAN=$'\033[38;5;87m'
+printf "  ${CYAN}tmux-monitor${RESET}              ${DIM}setup tmux-session-monitor workspace${RESET}\n"
+printf "  ${CYAN}cmux-setup${RESET} setup           ${DIM}setup all workspaces${RESET}\n"
+printf "  ${CYAN}cmux-setup${RESET} setup <name>    ${DIM}setup one workspace${RESET}\n"
+echo ""
