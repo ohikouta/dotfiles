@@ -639,8 +639,8 @@ add-zsh-hook chpwd _tpane_auto_color
 _tpane_auto_color
 
 codex() {
-  if [[ -f "$HOME/.config/bin/codex-startup-dashboard" ]]; then
-    zsh "$HOME/.config/bin/codex-startup-dashboard"
+  if command -v codex-startup-dashboard >/dev/null 2>&1; then
+    codex-startup-dashboard
   fi
 
   command codex "$@"
@@ -677,5 +677,4 @@ fi
 unset _AGENT_MAP_CACHE _AGENT_MAP_GEN
 
 # cmux workspace setup
-alias cmux-setup='~/projects/agent-playbook/scripts/cmux-setup.sh'
-alias tmux-monitor='~/projects/agent-playbook/scripts/cmux-setup.sh setup tmux-session-monitor'
+alias cmux-setup='~/Documents/mgmt-team/agent-playbook/scripts/cmux-setup.sh'
