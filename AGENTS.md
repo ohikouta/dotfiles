@@ -1,17 +1,17 @@
-# Repository Guidelines
+# リポジトリの運用ガイド
 
-## Project Structure & Module Organization
-This repository is a personal dotfiles tree rooted at `~/.config`. Tracked directories in this repo map directly to one tool or app, including `zsh/.zshrc`, `tmux/tmux.conf`, `wezterm/wezterm.lua`, `ghostty/config`, and `karabiner/karabiner.json`. Neovim lives in `nvim/` and is tracked as a Git submodule. Paths such as `fish/config.fish` and `raycast/extensions/` may exist locally under `~/.config`, but they are local-only and gitignored rather than tracked in this repository. Treat generated assets such as `.map` files and app state under `configstore/` as managed outputs unless you are intentionally updating them.
+## プロジェクト構成とファイル配置
+このリポジトリは `~/.config` をルートとする個人用設定ファイル群です。追跡対象のディレクトリは、`zsh/.zshrc`、`tmux/tmux.conf`、`wezterm/wezterm.lua`、`ghostty/config`、`karabiner/karabiner.json` のように、各ツールやアプリに対応しています。Neovim の設定は `nvim/` にあり、Git submodule として管理します。`fish/config.fish` や `raycast/extensions/` など、ローカルに存在していても Git の追跡対象外のパスがあります。`.map` ファイルなどの生成物や `configstore/` 内のアプリ状態は、意図して更新する場合を除き、管理対象の出力として扱ってください。
 
-## Build, Test, and Development Commands
-Clone into the expected path so configs resolve correctly:
+## ビルド・テスト・開発コマンド
+設定が正しく参照されるよう、リポジトリを所定の場所へ clone します。
 
 ```sh
 git clone git@github.com/ohikouta/dotfiles.git ~/.config
 cd ~/.config && git submodule update --init --recursive
 ```
 
-For Neovim submodule updates, pull inside `nvim/` and then commit the submodule pointer from the repo root. For Raycast extensions, run commands from the relevant extension directory, for example:
+Neovim の submodule を更新する場合は、`nvim/` 内で更新を取得し、リポジトリのルートで submodule の参照先を commit します。Raycast 拡張機能では、対象の拡張機能ディレクトリで次のコマンドを実行します。
 
 ```sh
 npm run lint
@@ -19,16 +19,23 @@ npm run build
 npm run dev
 ```
 
-These scripts wrap `ray lint`, `ray build`, and `ray develop`.
+これらのスクリプトは、それぞれ `ray lint`、`ray build`、`ray develop` を実行します。
 
-## Coding Style & Naming Conventions
-Preserve each tool's native format: Lua in `nvim/` and `wezterm/`, shell-style syntax in `zsh/` and `tmux/`, JSON in `karabiner/` and `configstore/`. Use 2-space indentation in JSON and the existing style elsewhere. Keep filenames conventional for the target tool, and prefer descriptive plugin or config names such as `lua/config/options.lua`. If you touch Neovim formatting, use `stylua`; Raycast extensions use `eslint`, `prettier`, and `ray lint`.
+## コーディング規約と命名
+各ツールの標準形式を維持します。`nvim/` と `wezterm/` では Lua、`zsh/` と `tmux/` ではシェル構文、`karabiner/` と `configstore/` では JSON を使用します。JSON は2スペースでインデントし、その他の形式は既存の書式に従います。対象ツールで一般的なファイル名を使い、`lua/config/options.lua` のように役割が分かる名前を優先します。Neovim の書式を変更した場合は `stylua` を使用します。Raycast 拡張機能では `eslint`、`prettier`、`ray lint` を使用します。
 
-## Testing Guidelines
-There is no repo-wide test suite. Validate changes with the narrowest relevant check: `npm run lint` or `npm run build` for Raycast extensions, and application-native reloads for shell and terminal configs. After editing user-facing keybindings or startup behavior, include a brief manual verification note in the PR.
+## テスト方針
+リポジトリ全体を対象とするテストスイートはありません。変更範囲に合った検証を行います。Raycast 拡張機能では `npm run lint` または `npm run build` を実行し、シェルやターミナルの設定では各アプリで再読み込みして確認します。利用者向けのキー割り当てや起動時の動作を変更した場合は、プルリクエストに簡潔な手動確認結果を記載します。
 
-## Commit & Pull Request Guidelines
-Recent history uses short, scoped commit subjects such as `wezterm:...`, `feat:...`, and `chore:...`; follow that pattern and keep commits focused to one tool or behavior change. Pull requests should explain what changed, which app or config area is affected, how you verified it, and include screenshots only when UI-visible behavior changed.
+## コミットとプルリクエスト
+コミットメッセージは、`feat:` や `docs:` などの接頭辞を除き、日本語で記述します。対象範囲が分かる短い件名を使い、変更をまとめてコミット単位を明確にしてください。プルリクエストには、変更内容、影響するアプリや設定、検証方法を記載します。画面に現れる変更がある場合は、必要に応じてスクリーンショットを添付します。
 
-## Security & Configuration Tips
-Do not commit secrets, tokens, machine-specific host data, or transient caches. Review diffs in `configstore/`, `gh/hosts.yml`, and Raycast extension settings carefully before committing.
+## セキュリティと設定情報
+秘密情報、トークン、端末固有のホスト情報、一時キャッシュを commit しないでください。`configstore/`、`gh/hosts.yml`、Raycast 拡張機能の設定を変更する場合は、差分を慎重に確認します。
+
+## 読者向け文書
+- 製品文書は、顧客・利用者・運用担当者・開発者など、明確な読者に提供する成果物として作成します。読者の視点に立ち、製品の振る舞い、要件、決定事項、手順、仕様を直接的かつ肯定的に記述します。
+- 製品文書には、エージェントや作成者向けの説明を含めません。「このディレクトリについて」のような案内、記入例かどうかの断り、共同作業の指示、過去の会話や修正経緯への言及は記載しません。
+- 想定される誤解への反論や、過去の指摘を受けた経緯が透ける表現を避けます。たとえば「記入例ではない」「AではなくB」のような否定・対比で始めず、求める範囲、振る舞い、判定基準を肯定形で直接示します。読者の判断に必要な区別は、適用条件や対応関係として明記します。
+- 規格に基づく設計では、出典と版を示し、該当する節や定義を引用します。規格の用語と、プロジェクトで採用した分類・適用方法を区別して説明します。
+- 文書を提出する前に、社外の読者として読み直します。裏側の経緯、説明のない分類名、作成者向けの指示、内部記録に属する進捗情報を取り除きます。
